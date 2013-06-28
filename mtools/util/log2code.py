@@ -64,8 +64,69 @@ class Log2CodeConverter(object):
             best_match = self.logs_by_word[word][coverage.index(best_cov)]
             return self.log_code_lines[best_match]
 
-    def __call__(self, line):
-        return self._log2code(line)
+    def _find_end(self, sub_line):
+        """ finds the ending part of the codeline by 
+            taking out the counters and durations
+        """
+        try:
+            end = sub_line.rindex('}')
+        except ValueError, e:
+            return sub_line
+        else:
+            return sub_line[:(end + 1)]
+
+
+    def _find_variable(self, pattern, logline):
+        """ return the variable parts of the code 
+            given a tuple of strings pattern
+            ie. (this, is, a, pattern) -> 'this is a good pattern' -> [good]
+        """
+        var_subs = []
+        # find the beginning of the pattern
+        first_index = logline.index(pattern[0])
+        # add the beginning part
+        var_subs.append(logline[:first_index])
+
+        for patt, patt_next in zip(pattern[:-1], pattern[1:]):
+            # regular expression pattern that finds what's in the middle of two substrings
+            pat = re.escape(patt) + '(.*)' + re.escape(patt_next)
+            # extract whats in the middle of the two substrings
+            between = re.search(pat, logline)
+            try:
+                # add what's in between if the search isn't none 
+                var_subs.append(between.group(1))
+            except Exception, e:
+                pass
+        rest_of_string = logline.rindex(pattern[-1]) + len(pattern[-1])
+
+        # add the rest of the string to the end minus the counters and durations
+        end_str = logline[rest_of_string:]
+        var_subs.append(self._find_end(end_str))
+
+        # strip whitespace and remove empty items from list
+        var_subs = filter(None, [sub.strip(" \n") for sub in var_subs])
+
+        return var_subs
+
+    def _variable_parts(self, line, codeline):
+        """returns the variable parts of the codeline, 
+            given the static parts
+        """
+        # codeline has the pattern and then has the outputs in different versions
+        if codeline:
+            var_subs = self._find_variable(codeline.pattern, line)
+            # each element returned is the tuple pattern, list of variable parts, and logline 
+            return var_subs   
+
+    def __call__(self, line, variable=False):
+        """calculates the variable parts in a 
+            lazy manner and always returns log2code part
+        """
+        if variable:
+            log2code = self._log2code(line)
+            return log2code, self._variable_parts(line,log2code)
+        else:
+            return self._log2code(line), None
 
 
 
