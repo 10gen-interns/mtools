@@ -34,7 +34,7 @@ class MLogDistinctTool(LogFileTool):
         non_matches = 0
 
         for line in self.args['logfile']:
-            cl = self.log2code(line)
+            cl, var = self.log2code(line)
             if cl:
                 codelines[cl.pattern] += 1
             else:
