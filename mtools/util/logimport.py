@@ -34,7 +34,6 @@ class LogImporter(object):
             name = self._collection_name(logfile.name)
         else:
             name = coll_name
-
         # drop that collection name - each log file is a collection
         self.db.drop_collection(name)
         self.collection = self.db[name]

@@ -22,6 +22,7 @@ def import_l2c_db():
         raise ImportError('log2code.pickle not found in %s.'%data_path)
 
 
+
 class Log2CodeConverter(object):
 
     # static import of logdb data structures
