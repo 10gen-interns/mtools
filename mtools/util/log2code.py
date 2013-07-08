@@ -64,7 +64,7 @@ class Log2CodeConverter(object):
             best_match = self.logs_by_word[word][coverage.index(best_cov)]
             return self.log_code_lines[best_match]
 
-    def _find_end(self, sub_line):
+    def _strip_counters(self, sub_line):
         """ finds the ending part of the codeline by 
             taking out the counters and durations
         """
@@ -101,7 +101,7 @@ class Log2CodeConverter(object):
 
         # add the rest of the string to the end minus the counters and durations
         end_str = logline[rest_of_string:]
-        var_subs.append(self._find_end(end_str))
+        var_subs.append(self._strip_counters(end_str))
 
         # strip whitespace and remove empty items from list
         var_subs = filter(None, [sub.strip(" \n") for sub in var_subs])
@@ -115,7 +115,7 @@ class Log2CodeConverter(object):
         # codeline has the pattern and then has the outputs in different versions
         if codeline:
             var_subs = self._find_variable(codeline.pattern, line)
-            # each element returned is the tuple pattern, list of variable parts, and logline 
+            # each element returned is the variable part
             return var_subs   
 
     def __call__(self, line, variable=False):

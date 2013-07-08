@@ -17,13 +17,12 @@ class LogImporter(object):
                 - thread
                 - operation
                 - namespace
-                - counters (nscanned, ntoreturn, nupdated,nreturned, ninserted
+                - counters (nscanned, ntoreturn, nupdated, nreturned, ninserted)
             - corresponding log2code message
             - corresponding variable parts of log2code message
     """
 
     def __init__(self, logfile, host='localhost', port=27017, coll_name=None):
-        """ logfile, mlogvar instance """
 
         self.logfile = logfile
         self.log2code = Log2CodeConverter()
