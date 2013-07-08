@@ -55,7 +55,7 @@ class MLogVersionTool(LogFileTool):
                 # if log line is a known command operation (query, update, command, ...) skip
                 continue
 
-            lcl, var = self.log2code(line[start:])
+            lcl, _ = self.log2code(line[start:])
             if lcl:
                 old_len = len(possible_versions)
                 possible_versions = possible_versions & set(lcl.versions)
