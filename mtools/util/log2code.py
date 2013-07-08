@@ -84,8 +84,9 @@ class Log2CodeConverter(object):
         except ValueError, e:
             return sub_line
         else:
-
-            sub= sub_line[begin + 1:]
+            # create a * in place character for the beginnings..
+            # needed when interleaving the lists
+            sub = sub_line[begin + 1:]
             return sub if len(sub) > 2 else "*"
 
 
