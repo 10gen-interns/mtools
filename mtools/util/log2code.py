@@ -75,6 +75,19 @@ class Log2CodeConverter(object):
         else:
             return sub_line[:(end + 1)]
 
+    def _strip_datetime(self,sub_line):
+        """ strip out datetime and other parts so that t
+            there is no redundancy
+        """
+        try:
+            begin = sub_line.index(']')
+        except ValueError, e:
+            return sub_line
+        else:
+
+            sub= sub_line[begin + 1:]
+            return sub if len(sub) > 2 else "*"
+
 
     def _find_variable(self, pattern, logline):
         """ return the variable parts of the code 
@@ -85,7 +98,9 @@ class Log2CodeConverter(object):
         # find the beginning of the pattern
         first_index = logline.index(pattern[0])
         # add the beginning part
-        var_subs.append(logline[:first_index])
+        beg_str = logline[:first_index]
+        #strip the beginning substring
+        var_subs.append(self._strip_datetime(beg_str))
 
         for patt, patt_next in zip(pattern[:-1], pattern[1:]):
             # regular expression pattern that finds what's in the middle of two substrings
