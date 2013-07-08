@@ -18,7 +18,7 @@ def import_logdb():
     if os.path.exists(os.path.join(data_path, 'logdb.pickle')):
         av, lv, lbw, lcl = cPickle.load(open(os.path.join(data_path, 'logdb.pickle'), 'rb'))
         return av, lv, lbw, lcl
-    else:
+    else:`
         raise ImportError('logdb.pickle not found in %s.'%path)
 
 
