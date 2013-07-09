@@ -23,24 +23,38 @@ class LogImporter(object):
             - corresponding log2code message
             - corresponding variable parts of log2code message
     """
+    class CollectionError(Exception):
+        def __init__(self, value):
+            self.value= value
+        def __str__(self):
+            return "Collection"  + repr(self.value) + "already exist"
 
-    def __init__(self, logfile, host='localhost', port=27017, coll_name=None):
+    def __init__(self, logfile, host='localhost', port=27017, coll_name=None, drop=False):
 
         self.logfile = logfile
         self.log2code = Log2CodeConverter()
         # open an instance of mongo
         self.client = MongoClient(host, port)
         self.db = self.client.logfiles
+
         # string name of collection if it's not already decided
         if coll_name == None:
             name = self._collection_name(logfile.name)
         else:
             name = coll_name
-        # drop that collection name - each log file is a collection
-        self.db.drop_collection(name)
+
+        # raise an error if the collection name will be overwritten
+        if name in self.db.collection_names():
+            if drop:
+                self.db.drop_collection(name)
+            else:
+                raise self.CollectionError(name)
+
         self.collection = self.db[name]
+
         # log2code database
-        self.log2code = self.client.log2code
+        self.log2code_db = self.client.log2code
+
         self._mongo_import()
         print "logs imported"
 
@@ -53,8 +67,13 @@ class LogImporter(object):
         # get the pattern
         pattern = codeline.pattern
 
+        log_dict=  self.log2code_db["instances"].find_one({'pattern': pattern})
+        # this will return None if there is no log_dict (this only happens in
+        # two cases)
+        return log_dict
 
-    
+
+
     def line_to_dict(self, line, index):
         """ converts a line to a dictionary that can be imported into Mongo
             the object id is the index of the line
@@ -68,8 +87,14 @@ class LogImporter(object):
 
         if codeline:
             # add in the other keys to the dictionary
-
-            logline_dict['log2code'] = {'pattern': codeline.pattern, 'variables': variable}
+            log_dict = self._getLog2code(codeline)
+            if not log_dict:
+                pass
+            else:
+                logline_dict['log2code'] = {'uid': log_dict['_id'],
+                                            'pattern': log_dict['pattern'],
+                                            'variables': variable
+                                            }
         # make the _id the index of the line in the logfile
         logline_dict['_id'] = index
         return logline_dict

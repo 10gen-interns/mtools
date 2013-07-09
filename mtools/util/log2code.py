@@ -18,7 +18,7 @@ def import_logdb():
     if os.path.exists(os.path.join(data_path, 'logdb.pickle')):
         av, lv, lbw, lcl = cPickle.load(open(os.path.join(data_path, 'logdb.pickle'), 'rb'))
         return av, lv, lbw, lcl
-    else:`
+    else:
         raise ImportError('logdb.pickle not found in %s.'%path)
 
 
@@ -87,7 +87,7 @@ class Log2CodeConverter(object):
             # create a * in place character for the beginnings..
             # needed when interleaving the lists
             sub = sub_line[begin + 1:]
-            return sub if len(sub) > 2 else "*"
+            return sub
 
 
     def _find_variable(self, pattern, logline):
@@ -98,7 +98,6 @@ class Log2CodeConverter(object):
         var_subs = []
         # find the beginning of the pattern
         first_index = logline.index(pattern[0])
-        # add the beginning part
         beg_str = logline[:first_index]
         #strip the beginning substring
         var_subs.append(self._strip_datetime(beg_str))
@@ -119,8 +118,8 @@ class Log2CodeConverter(object):
         end_str = logline[rest_of_string:]
         var_subs.append(self._strip_counters(end_str))
 
-        # strip whitespace and remove empty items from list
-        var_subs = filter(None, [sub.strip(" \n") for sub in var_subs])
+        # strip whitespace from each string, but keep the strings themselves
+        var_subs = [v.strip() for v in var_subs]
 
         return var_subs
 
