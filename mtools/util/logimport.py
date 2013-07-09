@@ -91,7 +91,7 @@ class LogImporter(object):
                 # it's not in mongo, therefore doesn't have a uid
                 logline_dict['log2code'] = {'uid': -1,
                                            'pattern': codeline.pattern,
-                                           'variables:': variable}
+                                           'variables': variable}
             else:
                 logline_dict['log2code'] = {'uid': log_dict['_id'],
                                             'pattern': log_dict['pattern'],
