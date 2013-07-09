@@ -10,20 +10,22 @@ import json
 
 class LogImporter(object):
     """ Constructor initializes file and connects to mongo
-        In one document there is: 
-            - _id which is the line number of the logline
-            - json representation of logline which has:
-                - line string
-                - split tokens
-                - duration 
-                - thread
-                - operation
-                - namespace
-                - counters (nscanned, ntoreturn, nupdated, nreturned, ninserted)
-            - corresponding log2code message
-            - corresponding variable parts of log2code message
+        Document looks like this:
+        {   _id: num
+            thread: ""
+            namespace: ""
+            duration: num
+            log2code:
+                {   uid: num
+                    pattern: [""]
+                    variables: [""]
+                }
+            counters: nums
+            line_str: ""
+        }
     """
     class CollectionError(Exception):
+
         def __init__(self, value):
             self.value= value
         def __str__(self):
@@ -71,8 +73,6 @@ class LogImporter(object):
         # two cases)
         return log_dict
 
-
-
     def line_to_dict(self, line, index):
         """ converts a line to a dictionary that can be imported into Mongo
             the object id is the index of the line
@@ -97,12 +97,12 @@ class LogImporter(object):
                                             'pattern': log_dict['pattern'],
                                             'variables': variable
                                             }
-        # make the _id the index of the line in the logfile
         else:
             # there is not codeline, so there is a uid of -1 and pattern is none
             logline_dict['log2code'] = {'pattern': None,
                                         'variables': variable,
                                         'uid': -1}
+        # make the _id the line of the logfile (unique)
         logline_dict['_id'] = index
         return logline_dict
 
@@ -114,6 +114,7 @@ class LogImporter(object):
 
         for index, line in enumerate(self.logfile):
             # add to batch
+            line = unicode(line, errors='ignore')
             batch.append(self.line_to_dict(line,index))
             if index % 10000 == 0:
                 print "imported %i lines so far..." % index
