@@ -4,6 +4,8 @@ from pymongo import MongoClient
 from mtools.util.logline import LogLine
 from mtools.util.log2code import Log2CodeConverter
 
+import os
+
 import json 
 
 class LogImporter(object):
@@ -37,15 +39,23 @@ class LogImporter(object):
         # drop that collection name - each log file is a collection
         self.db.drop_collection(name)
         self.collection = self.db[name]
+        # log2code database
+        self.log2code = self.client.log2code
         self._mongo_import()
         print "logs imported"
 
-    def _collection_name(self,logname):
+    def _collection_name(self, logname):
         """ takes the ending part of the filename """
         # take out directory, and the .log part
-        return logname.split('/')[-1].split('.')[0]
+        return os.path.basename(logname)
+
+    def _getLog2code(self, codeline):
+        # get the pattern
+        pattern = codeline.pattern
+
+
     
-    def line_to_dict(self,line, index):
+    def line_to_dict(self, line, index):
         """ converts a line to a dictionary that can be imported into Mongo
             the object id is the index of the line
         """
@@ -58,6 +68,7 @@ class LogImporter(object):
 
         if codeline:
             # add in the other keys to the dictionary
+
             logline_dict['log2code'] = {'pattern': codeline.pattern, 'variables': variable}
         # make the _id the index of the line in the logfile
         logline_dict['_id'] = index
