@@ -87,7 +87,7 @@ class Log2CodeConverter(object):
         except ValueError, e:
             return sub_line
         else:
-            # create a * in place character for the beginnings..
+            # create a "" in place character for the beginnings..
             # needed when interleaving the lists
             sub = sub_line[begin + 1:]
             return sub
@@ -130,11 +130,15 @@ class Log2CodeConverter(object):
         """returns the variable parts of the codeline, 
             given the static parts
         """
+        var_subs = []
         # codeline has the pattern and then has the outputs in different versions
         if codeline:
             var_subs = self._find_variable(codeline.pattern, line)
-            # each element returned is the variable part
-            return var_subs   
+        else:
+            # make the variable part the line string without all the other stuff
+            line_str= self._strip_datetime(self._strip_counters(line))
+            var_subs= [line_str.strip()]
+        return var_subs
 
     def __call__(self, line, variable=False):
         """calculates the variable parts in a 

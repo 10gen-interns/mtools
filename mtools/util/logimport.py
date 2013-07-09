@@ -46,6 +46,7 @@ class LogImporter(object):
         # raise an error if the collection name will be overwritten
         if name in self.db.collection_names():
             if drop:
+                print "dropped collection"
                 self.db.drop_collection(name)
             else:
                 raise self.CollectionError(name)
@@ -61,7 +62,9 @@ class LogImporter(object):
     def _collection_name(self, logname):
         """ takes the ending part of the filename """
         # take out directory, and the .log part
-        return os.path.basename(logname)
+
+        basename=os.path.basename(logname)
+        return os.path.splitext(basename)[0]
 
     def _getLog2code(self, codeline):
         # get the pattern
