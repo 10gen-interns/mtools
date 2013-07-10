@@ -132,7 +132,7 @@ class Log2CodeConverter(object):
         if codeline:
             var_subs = self._find_variable(codeline.pattern, line)
         else:
-            # make the variable part the line string without all the other stuff
+            # make the variable part pytohe line string without all the other stuff
             line_str= self._strip_datetime(self._strip_counters(line))
             var_subs= [line_str.strip()]
         return var_subs
