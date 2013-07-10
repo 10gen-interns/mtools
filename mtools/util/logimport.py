@@ -52,6 +52,8 @@ class LogImporter(object):
         """
         # convert the json representation into a dictionary 
         logline_dict = LogLine(line).to_dict()
+        del logline_dict['split_tokens']
+
         # get the variable parts and the log2code output of the line
         codeline, variable = self.log2code(line, variable=True)
 
