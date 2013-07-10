@@ -66,5 +66,16 @@ class LogImporter(object):
         """ imports every line into mongo with the collection name 
             being the name of the logfile and each document being one logline
         """
+        batch = []
+
         for index, line in enumerate(self.logfile):
-            self.collection.insert(self.line_to_dict(line,index))
+            # add to batch
+            batch.append(self.line_to_dict(line,index))
+            if index % 10000 == 0:
+                print "imported %i lines so far..." % index
+                self.collection.insert(batch, w=0)
+                batch = []
+
+        # insert the remaining docs in the last batch
+        self.collection.insert(batch, w=0)
+
