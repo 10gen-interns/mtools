@@ -52,25 +52,21 @@ class LogImporter(object):
                 raise self.CollectionError(name)
 
         self.collection = self.db[name]
-
         # log2code database
         self.log2code_db = self.client.log2code
-
         self._mongo_import()
         print "logs imported"
 
     def _collection_name(self, logname):
         """ takes the ending part of the filename """
-        # take out directory, and the .log part
-
-        basename=os.path.basename(logname)
+        basename = os.path.basename(logname)
         return os.path.splitext(basename)[0]
 
     def _getLog2code(self, codeline):
         # get the pattern
         pattern = codeline.pattern
 
-        log_dict=  self.log2code_db["instances"].find_one({'pattern': pattern})
+        log_dict =  self.log2code_db["instances"].find_one({'pattern': pattern})
         # this will return None if there is no log_dict (this only happens in
         # two cases)
         return log_dict
@@ -83,8 +79,8 @@ class LogImporter(object):
         """
         # convert the json representation into a dictionary 
         logline_dict = LogLine(line).to_dict()
+        
         del logline_dict['split_tokens']
-
         # get the variable parts and the log2code output of the line
         codeline, variable = self.log2code(line, variable=True)
 
@@ -92,13 +88,21 @@ class LogImporter(object):
             # add in the other keys to the dictionary
             log_dict = self._getLog2code(codeline)
             if not log_dict:
-                pass
+                # it's not in mongo, therefore doesn't have a uid
+                logline_dict['log2code'] = {'uid': -1,
+                                           'pattern': codeline.pattern,
+                                           'variables:': variable}
             else:
                 logline_dict['log2code'] = {'uid': log_dict['_id'],
                                             'pattern': log_dict['pattern'],
                                             'variables': variable
                                             }
         # make the _id the index of the line in the logfile
+        else:
+            # there is not codeline, so there is a uid of -1 and pattern is none
+            logline_dict['log2code'] = {'pattern': None,
+                                        'variables': variable,
+                                        'uid': -1}
         logline_dict['_id'] = index
         return logline_dict
 
