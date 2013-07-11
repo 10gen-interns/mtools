@@ -57,6 +57,8 @@ class LogImporter(object):
         # log2code database
         self.log2code_db = self.client.log2code
         self._mongo_import()
+        print "logs imported..starting indexing"
+        self._ensure_indices(['thread', 'operation', 'duration', 'log2code.uid'])
         print "logs imported"
 
     def _collection_name(self, logname):
@@ -81,6 +83,7 @@ class LogImporter(object):
         logline_dict = LogLine(line).to_dict()
         
         del logline_dict['split_tokens']
+        del logline_dict['line_str']
         # get the variable parts and the log2code output of the line
         codeline, variable = self.log2code(line, variable=True)
 
@@ -105,6 +108,12 @@ class LogImporter(object):
         # make the _id the line of the logfile (unique)
         logline_dict['_id'] = index
         return logline_dict
+
+    def _ensure_indices(self,indices):
+        for i in indices:
+            print "creating index on" + str(i)
+            self.collection.ensure_index(i)
+
 
     def _mongo_import(self):
         """ imports every line into mongo with the collection name 
