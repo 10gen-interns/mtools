@@ -5,7 +5,7 @@ from mtools.util.log2code import Log2CodeConverter
 
 import os
 
-from indexes import indexes
+from indexes import IndexBuilder
 
 
 class LogImporter(object):
@@ -31,7 +31,7 @@ class LogImporter(object):
         def __str__(self):
             return "Collection"  + repr(self.value) + "already exist"
 
-    def __init__(self, logfile, host='localhost', port=27017, coll_name=None, drop=False):
+    def __init__(self, logfile, host='localhost', port=27017, coll_name=None, drop=False, log_import=True, index=True):
 
         self.logfile = logfile
         self.log2code = Log2CodeConverter()
@@ -55,12 +55,16 @@ class LogImporter(object):
 
         self.collection = self.db[name]
         # log2code database
-        self.log2code_db = self.client.log2code
-        self._mongo_import()
-        print "logs imported..starting indexing"
-        #make this into a single file
-        self._ensure_indices()
-        print "logs imported"
+        if log_import:
+            self.log2code_db = self.client.log2code
+            self._mongo_import()
+
+        if index:
+            self.indexes = IndexBuilder()
+            print "logs imported..starting indexing"
+            #make this into a single file
+            self._ensure_indices()
+            print "logs imported"
 
     def _collection_name(self, logname):
         """ takes the ending part of the filename """
@@ -75,6 +79,11 @@ class LogImporter(object):
         # this will return None if there is no log_dict (this only happens in
         # two cases)
         return log_dict
+
+    def _log2code_dict(self, uid, pattern, variables):
+        return {'uid': uid,
+                'pattern': pattern,
+                'variables': variables}
 
     def line_to_dict(self, line, index):
         """ converts a line to a dictionary that can be imported into Mongo
@@ -93,25 +102,25 @@ class LogImporter(object):
             log_dict = self._getLog2code(codeline)
             if not log_dict:
                 # it's not in mongo, therefore doesn't have a uid
-                logline_dict['log2code'] = {'uid': -1,
-                                           'pattern': codeline.pattern,
-                                           'variables': variable}
+                logline_dict['log2code'] = self._log2code_dict(-1,
+                                                               codeline.pattern, variable)
+
             else:
-                logline_dict['log2code'] = {'uid': log_dict['_id'],
-                                            'pattern': log_dict['pattern'],
-                                            'variables': variable
-                                            }
+                logline_dict['log2code'] = self._log2code_dict(log_dict['_id'],
+                                                               log_dict['pattern'],
+                                                               variable)
+
         else:
             # there is not codeline, so there is a uid of -1 and pattern is none
-            logline_dict['log2code'] = {'pattern': None,
-                                        'variables': variable,
-                                        'uid': -1}
+            logline_dict['log2code'] = self._log2code_dict(-1, None, variable)
         # make the _id the line of the logfile (unique)
         logline_dict['line_no'] = index
         return logline_dict
 
     def _ensure_indices(self):
-        for i in indexes:
+        """ indexes the logfile based on the indexes in created in the index builder
+        """
+        for i in self.indexes():
             print "creating index on" + str(i)
             self.collection.ensure_index(i)
 
