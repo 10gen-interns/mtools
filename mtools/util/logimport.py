@@ -1,4 +1,3 @@
-import pymongo
 from pymongo import MongoClient
 
 from mtools.util.logline import LogLine
@@ -6,7 +5,8 @@ from mtools.util.log2code import Log2CodeConverter
 
 import os
 
-import json 
+from indexes import indexes
+
 
 class LogImporter(object):
     """ Constructor initializes file and connects to mongo
@@ -58,7 +58,8 @@ class LogImporter(object):
         self.log2code_db = self.client.log2code
         self._mongo_import()
         print "logs imported..starting indexing"
-        self._ensure_indices(['thread', 'operation', 'duration', 'log2code.uid'])
+        #make this into a single file
+        self._ensure_indices()
         print "logs imported"
 
     def _collection_name(self, logname):
@@ -106,13 +107,14 @@ class LogImporter(object):
                                         'variables': variable,
                                         'uid': -1}
         # make the _id the line of the logfile (unique)
-        logline_dict['_id'] = index
+        logline_dict['line_no'] = index
         return logline_dict
 
-    def _ensure_indices(self,indices):
-        for i in indices:
+    def _ensure_indices(self):
+        for i in indexes:
             print "creating index on" + str(i)
             self.collection.ensure_index(i)
+
 
 
     def _mongo_import(self):
