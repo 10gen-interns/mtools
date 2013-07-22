@@ -45,8 +45,8 @@ class LogImporter(object):
         else:
             name = coll_name
 
-        # raise an error if the collection name will be overwritten
-        if name in self.db.collection_names():
+        # raise an error if the collection name will be overwritten - must be in logimport stage
+        if name in self.db.collection_names() and log_import:
             if drop:
                 print "dropped collection"
                 self.db.drop_collection(name)
