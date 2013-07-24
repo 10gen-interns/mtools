@@ -1,5 +1,7 @@
 # mtools
 
+[![PyPI version](https://badge.fury.io/py/mtools.png)](http://badge.fury.io/py/mtools)
+
 A collection of helper scripts to set up MongoDB test environments and
 parse MongoDB log files (mongod, mongos). 
 
@@ -15,7 +17,7 @@ The following tools are in the mtools collection:
 * [mlogmerge](README.md#mlogmerge) -- merge several logfiles by time, includes time zone adjustments
 * [mlog2json](README.md#mlog2json) -- convert each line of a log file to a JSON document for mongoimport
 * [mplotqueries](README.md#mplotqueries) -- visualize logfiles with different types of plots (requires matplotlib)
-* [mlogvis](README.md#mlogvis) -- a simplified version of mplotqueries, that runs in a web browser and doesn't require matplotlib (BETA)
+* [mlogvis](README.md#mlogvis) -- creates a self-contained html file that shows a visualization in a web browser
 * [mlaunch](README.md#mlaunch) -- a script to quickly spin up local mongod/mongos environments (requires pymongo)
 
 
@@ -32,7 +34,7 @@ instructions for these modules.
 
 Recent Changes
 --------------
-The current version of mtools is 1.0.1. See [CHANGES.md](./CHANGES.md) for a list of changes from previous versions of mtools.
+The current version of mtools is 1.0.2. See [CHANGES.md](./CHANGES.md) for a list of changes from previous versions of mtools.
 
 
 Contribute to mtools
@@ -152,7 +154,7 @@ mlogdistinct
 
 #### Description
 
-Groups all similar log messages in the logfile together and only displays a distinct set of messages (one for each group) and the number of occurences in the logfile. "Similar" here means that all log messages originate from the same code line in the source code, but may have different variable parts.
+Groups all similar log messages in the logfile together and only displays a distinct set of messages (one for each group) and the number of matches in the logfile. "Similar" here means that all log messages originate from the same code line in the source code, but may have different variable parts.
 
 This tool builds on top of the code2line module within mtools and is currently in BETA state. If you find any problems using this tool, please report it through the github issue tracker on this page. It would also be helpful to get any log lines that you think should have been matched. Use `--verbose` to output the lines that couldn't be matched.
 
@@ -312,28 +314,27 @@ plots them as vertical lines.
 
 <hr>
 
-mlogvis (BETA)
---------------
+mlogvis
+-------
 
 #### Description
 
-A script to visualize logfiles in the browser, using the d3.js javascript visualization engine.
+A script to visualize logfiles in a browser, using the d3.js javascript visualization engine.
 `mlogvis` is a prototype that implements a sub-set of features of mplotqueries without the 
 matplotlib dependency. Eventually, the two scripts will merge into one. 
 
-The script will read a logfile, process the data and store a .json file in a subfolder .mlogvis/ 
-of the current working directory. It will then start up a web server on port 8888 (or higher, if
-that port is already taken) and open a browser tab to display the information.
-
+The script will read a logfile, process the data and write a self-contained html file 
+to the current working directory. It will then start open a browser tab to display the file.
+The html file can also be sent to somebody and openend by any modern browser. Internet
+connection required for dynamic loading of d3 javascript library.
 
 ###### Usage  
 
 usage: mlogvis [-h] logfile
 
     mongod/mongos log file visualizer (browser edition). Extracts information from
-    each line of the log file and outputs a json document per line, stored in a
-    sub-folder .mlogvis/. Then spins up an HTTP server and opens a page in the
-    browser to view the data.
+    each line of the log file and outputs a html file that can be viewed in a browser.
+    Automatically opens a browser tab and shows the file.
 
     positional arguments:
       logfile     logfile to visualize.
