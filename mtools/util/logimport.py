@@ -85,6 +85,15 @@ class LogImporter(object):
                 'pattern': pattern,
                 'variables': variables}
 
+    def _add_connection(self, logline_dict):
+        """ add the connection to the threads
+        """
+        # get the logline variable part
+        conn_num = logline_dict['log2code']['variables'][2]
+        logline_dict['thread'].append("conn" + conn_num)
+
+
+
     def line_to_dict(self, line, index):
         """ converts a line to a dictionary that can be imported into Mongo
             the object id is the index of the line
@@ -94,6 +103,13 @@ class LogImporter(object):
         
         del logline_dict['split_tokens']
         del logline_dict['line_str']
+
+        try:
+            thread = logline_dict['thread']
+            logline_dict['thread']= [thread]
+        except:
+            pass
+
         # get the variable parts and the log2code output of the line
         codeline, variable = self.log2code(line, variable=True)
 
@@ -113,6 +129,10 @@ class LogImporter(object):
         else:
             # there is not codeline, so there is a uid of -1 and pattern is none
             logline_dict['log2code'] = self._log2code_dict(-1, None, variable)
+
+        if logline_dict['log2code']['uid'] == 891:
+            self._add_connection(logline_dict)
+
         # make the _id the line of the logfile (unique)
         logline_dict['line_no'] = index
         return logline_dict

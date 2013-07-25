@@ -19,7 +19,10 @@ def import_l2c_db():
         av, lv, lbw, lcl = cPickle.load(open(os.path.join(data_path, 'log2code.pickle'), 'rb'))
         return av, lv, lbw, lcl
     else:
+
         raise ImportError('log2code.pickle not found in %s.'%data_path)
+
+
 
 
 class Log2CodeConverter(object):
